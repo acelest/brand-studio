@@ -1,7 +1,7 @@
 "use client";
 
 import { useRef, useCallback, useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, MotionConfig } from "motion/react";
 import { Plus, Download, Check, Sun, Moon } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { PreviewCanvas, type PreviewCanvasHandle } from "@/components/studio/PreviewCanvas";
@@ -83,6 +83,7 @@ export default function CodexPage() {
   };
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans relative transition-colors duration-300">
       {/* Toast Alert */}
       <AnimatePresence>
@@ -112,36 +113,57 @@ export default function CodexPage() {
         <button
           type="button"
           onClick={toggleTheme}
-          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-foreground/5 text-foreground/40 hover:text-foreground transition-all active:scale-95 cursor-pointer"
+          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 min-h-11 min-w-11 sm:min-h-0 sm:min-w-0 flex items-center justify-center rounded-full hover:bg-foreground/5 text-foreground/40 hover:text-foreground transition-all active:scale-95 cursor-pointer"
           aria-label="Toggle Theme"
         >
-          {theme === "dark" ? (
-            <Sun className="w-4.5 h-4.5" />
-          ) : (
-            <Moon className="w-4.5 h-4.5" />
-          )}
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={theme}
+              initial={{ opacity: 0, rotate: -90, scale: 0.6 }}
+              animate={{ opacity: 1, rotate: 0, scale: 1 }}
+              exit={{ opacity: 0, rotate: 90, scale: 0.6 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="block"
+            >
+              {theme === "dark" ? (
+                <Sun className="w-4.5 h-4.5" />
+              ) : (
+                <Moon className="w-4.5 h-4.5" />
+              )}
+            </motion.span>
+          </AnimatePresence>
         </button>
       </header>
 
       {/* ─── MAIN WORKSPACE ─── */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 py-4 md:py-8 max-w-4xl mx-auto w-full overflow-hidden">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 py-4 md:py-8 max-w-4xl mx-auto w-full overflow-y-auto">
         {/* Title */}
-        <h1 className="text-xl sm:text-2xl font-light tracking-tight text-center mb-6 md:mb-8 select-none text-foreground/90">
+        <motion.h1
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: "easeOut", delay: 0.05 }}
+          className="text-xl sm:text-2xl font-light tracking-tight text-center mb-6 md:mb-8 select-none text-foreground/90"
+        >
           What's your MBS image?
-        </h1>
+        </motion.h1>
 
         {/* Studio Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-8 md:gap-12 w-full items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.45, ease: "easeOut", delay: 0.12 }}
+          className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-8 md:gap-12 w-full items-center justify-center"
+        >
           {/* LEFT: Preview Canvas / Upload Dropzone */}
           <div
             className={cn(
               "rounded-2xl overflow-hidden border border-foreground/10 relative bg-foreground/[0.03] flex items-center justify-center transition-all duration-300 mx-auto w-full",
-              !media && "aspect-[4/3] md:aspect-[4/3]"
+              !media && "aspect-[4/3] md:aspect-[4/3]",
+              media && "max-h-[35vh] sm:max-h-[50vh]"
             )}
             style={media ? {
               aspectRatio: `${media.width} / ${media.height}`,
               height: "480px",
-              maxHeight: "50vh",
               width: "auto",
               maxWidth: "100%"
             } : undefined}
@@ -150,10 +172,10 @@ export default function CodexPage() {
               {media ? (
                 <motion.div
                   key="canvas"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
                   className="w-full h-full flex items-center justify-center"
                 >
                   <PreviewCanvas
@@ -167,7 +189,7 @@ export default function CodexPage() {
                     type="button"
                     aria-label="Remove media"
                     onClick={clearMedia}
-                    className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/70 transition-all duration-150 cursor-pointer"
+                    className="absolute top-3 right-3 z-10 w-10 h-10 sm:w-8 sm:h-8 rounded-full bg-black/50 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/70 transition-all duration-150 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5 rotate-45" />
                   </button>
@@ -175,10 +197,10 @@ export default function CodexPage() {
               ) : (
                 <motion.label
                   key="dropzone"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
+                  initial={{ opacity: 0, scale: 0.97 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.97 }}
+                  transition={{ duration: 0.25, ease: "easeOut" }}
                   onDragOver={handleDragOver}
                   onDragLeave={handleDragLeave}
                   onDrop={handleDrop}
@@ -217,7 +239,7 @@ export default function CodexPage() {
                     disabled={!media}
                     onClick={() => update({ format: "original" })}
                     className={cn(
-                      "py-1 text-[11px] font-semibold rounded-md transition-all select-none cursor-pointer",
+                      "py-2 sm:py-1 text-[11px] font-semibold rounded-md transition-all select-none cursor-pointer",
                       config.format === "original"
                         ? "bg-background text-foreground shadow-sm"
                         : "text-foreground/50 hover:text-foreground/80 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -230,7 +252,7 @@ export default function CodexPage() {
                     disabled={!media}
                     onClick={() => update({ format: "vertical" })}
                     className={cn(
-                      "py-1 text-[11px] font-semibold rounded-md transition-all select-none cursor-pointer",
+                      "py-2 sm:py-1 text-[11px] font-semibold rounded-md transition-all select-none cursor-pointer",
                       config.format === "vertical"
                         ? "bg-background text-foreground shadow-sm"
                         : "text-foreground/50 hover:text-foreground/80 disabled:opacity-40 disabled:cursor-not-allowed"
@@ -258,7 +280,7 @@ export default function CodexPage() {
                     maxLength={25}
                     value={config.customBrandName || ""}
                     onChange={(e) => update({ customBrandName: e.target.value })}
-                    className="w-full px-3 py-1.5 text-xs rounded-md bg-foreground/5 border border-foreground/5 focus:outline-none focus:border-foreground/20 text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    className="w-full px-3 py-1.5 text-base sm:text-xs rounded-md bg-foreground/5 border border-foreground/5 focus:outline-none focus:border-foreground/20 text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   />
                 </div>
 
@@ -397,8 +419,9 @@ export default function CodexPage() {
               </a>
             </div>
           </div>
-        </div>
+        </motion.div>
       </main>
     </div>
+    </MotionConfig>
   );
 }
