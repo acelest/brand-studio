@@ -1,36 +1,89 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Brand Studio
 
-## Getting Started
+> Upload an image or video. Apply a professional brand identity in seconds. Export PNG or MP4.
 
-First, run the development server:
+Brand Studio is a standalone Next.js 16 web application — part of the Content Platform ecosystem, independent from the Content Factory CLI engine.
+
+---
+
+## Stack
+
+| Layer | Tech |
+|---|---|
+| Framework | Next.js 16 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS v4 (CSS-first) |
+| Components | shadcn/ui (Nova preset — Geist + Lucide) |
+| Animation | Motion (Framer Motion v11+) |
+| Canvas | HTML5 2D Canvas API |
+| Fonts | Geist Sans + Geist Mono |
+
+---
+
+## Quick Start
 
 ```bash
+cd brand-studio
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# → http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+brand-studio/
+├── app/
+│   ├── layout.tsx          # Root layout: fonts, dark mode, TooltipProvider
+│   ├── page.tsx            # Studio page (single-page app)
+│   └── globals.css         # Design tokens + utility classes
+│
+├── components/studio/
+│   ├── BrandToolbar.tsx    # Top bar: Studio logo + brand switcher
+│   ├── BrandSelector.tsx   # Brand kit dropdown
+│   ├── UploadDropzone.tsx  # Drag-drop file upload
+│   ├── PreviewCanvas.tsx   # Live branded canvas
+│   ├── SettingsSidebar.tsx # Right panel orchestrator
+│   ├── LogoSettings.tsx    # Logo size, opacity, position
+│   ├── TypographySettings.tsx # Company name, text controls
+│   └── ExportPanel.tsx     # PNG/MP4 export actions
+│
+├── hooks/
+│   ├── useBrandKit.ts      # Fetch + cache brand.json
+│   ├── useOverlay.ts       # Overlay config state (useReducer)
+│   ├── useMediaFile.ts     # File selection + object URL lifecycle
+│   └── useExport.ts        # canvas → Blob → download
+│
+├── lib/branding/
+│   └── engine.ts           # Pure canvas overlay math + export utilities
+│
+├── types/
+│   └── brandkit.ts         # BrandKit, OverlayConfig, MediaFile types
+│
+└── public/brands/
+    └── mybestsim/
+        ├── brand.json      # BrandKit configuration (from TOML)
+        ├── logo.png
+        └── logo-billboard.png
+```
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## Adding a New Brand
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. Create `public/brands/<id>/brand.json` following the `BrandKit` schema in `types/brandkit.ts`.
+2. Add `logo.png` and `logo-billboard.png` assets.
+3. Register the brand in `types/brandkit.ts → AVAILABLE_BRANDS`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+No code changes needed elsewhere.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Architecture Notes
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Rendering is client-side only.** The canvas is drawn in the browser via the HTML5 2D Canvas API. No FFmpeg, no server-side rendering.
+- **BrandKit is config-driven.** All overlay values come from `brand.json`. Zero hardcoded values in components.
+- **Mocked services.** MP4 export is stubbed. When the Content Factory API is ready, wire `hooks/useExport.ts` to the Server Action in `app/actions/render.ts`.
+- **State is pure React.** No Zustand, no Context. `useReducer` in `useOverlay.ts` is the single source of truth for overlay config.

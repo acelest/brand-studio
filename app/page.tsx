@@ -1,63 +1,320 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useRef, useCallback, useState, useEffect } from "react";
+import { motion, AnimatePresence } from "motion/react";
+import { Plus, Download, Check, Sun, Moon } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { PreviewCanvas, type PreviewCanvasHandle } from "@/components/studio/PreviewCanvas";
+import { useMediaFile } from "@/hooks/useMediaFile";
+import { useOverlay } from "@/hooks/useOverlay";
+import { useExport } from "@/hooks/useExport";
+import { CURRENT_BRAND } from "@/types/brandkit";
+import { cn } from "@/lib/utils";
+
+export default function CodexPage() {
+  const { media, isDragging, setIsDragging, loadFile, clearMedia } = useMediaFile();
+  const { config, update, reset } = useOverlay();
+  const canvasRef = useRef<PreviewCanvasHandle>(null);
+  const { status: exportStatus, exportPng } = useExport();
+
+  const [theme, setTheme] = useState<"dark" | "light">("dark");
+
+  useEffect(() => {
+    const saved = localStorage.getItem("theme") as "dark" | "light" | null;
+    const initial = saved || "dark";
+    setTheme(initial);
+    if (initial === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const next = theme === "dark" ? "light" : "dark";
+    setTheme(next);
+    localStorage.setItem("theme", next);
+    if (next === "dark") {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file) loadFile(file);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) loadFile(file);
+  };
+
+  const triggerDownload = () => {
+    if (!media) return;
+    exportPng(canvasRef.current?.canvas ?? null, "mbs-branded.png");
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans relative transition-colors duration-300">
+      {/* Toast Alert */}
+      <AnimatePresence>
+        {exportStatus === "done" && (
+          <motion.div
+            initial={{ opacity: 0, y: -20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 16, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 350, damping: 25 }}
+            className="fixed top-0 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-full border border-white/10 bg-[#0f0f0f]/90 backdrop-blur-md shadow-[0_8px_32px_rgba(0,0,0,0.8)] select-none pointer-events-none"
+          >
+            <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center">
+              <Check className="w-3 h-3 text-black stroke-[3.5px]" />
+            </div>
+            <span className="text-xs font-semibold tracking-tight text-white/90">
+              Enregistré dans Photos
+            </span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* ─── HEADER ─── */}
+      <header className="h-12 flex items-center justify-center border-b border-foreground/5 flex-shrink-0 relative">
+        <div className="text-[10px] font-bold tracking-widest uppercase text-foreground/30 select-none">
+          MBS Image Maker
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="absolute right-4 top-1/2 -translate-y-1/2 p-2 rounded-full hover:bg-foreground/5 text-foreground/40 hover:text-foreground transition-all active:scale-95 cursor-pointer"
+          aria-label="Toggle Theme"
+        >
+          {theme === "dark" ? (
+            <Sun className="w-4.5 h-4.5" />
+          ) : (
+            <Moon className="w-4.5 h-4.5" />
+          )}
+        </button>
+      </header>
+
+      {/* ─── MAIN WORKSPACE ─── */}
+      <main className="flex-1 flex flex-col items-center justify-center px-6 py-4 md:py-8 max-w-4xl mx-auto w-full overflow-hidden">
+        {/* Title */}
+        <h1 className="text-xl sm:text-2xl font-light tracking-tight text-center mb-6 md:mb-8 select-none text-foreground/90">
+          What's your MBS image?
+        </h1>
+
+        {/* Studio Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-[1fr_320px] gap-8 md:gap-12 w-full items-center justify-center">
+          {/* LEFT: Preview Canvas / Upload Dropzone */}
+          <div
+            className={cn(
+              "rounded-2xl overflow-hidden border border-foreground/10 relative bg-foreground/[0.03] flex items-center justify-center transition-all duration-300 mx-auto w-full",
+              !media && "aspect-[4/3] md:aspect-[4/3]"
+            )}
+            style={media ? {
+              aspectRatio: `${media.width} / ${media.height}`,
+              height: "480px",
+              maxHeight: "50vh",
+              width: "auto",
+              maxWidth: "100%"
+            } : undefined}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <AnimatePresence mode="wait">
+              {media ? (
+                <motion.div
+                  key="canvas"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-full h-full flex items-center justify-center"
+                >
+                  <PreviewCanvas
+                    ref={canvasRef}
+                    media={media}
+                    brandKit={CURRENT_BRAND}
+                    config={config}
+                  />
+                  {/* Clear media button */}
+                  <button
+                    type="button"
+                    aria-label="Remove media"
+                    onClick={clearMedia}
+                    className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm border border-white/15 flex items-center justify-center text-white/70 hover:text-white hover:bg-black/70 transition-all duration-150 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5 rotate-45" />
+                  </button>
+                </motion.div>
+              ) : (
+                <motion.label
+                  key="dropzone"
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={cn(
+                    "absolute inset-0 flex flex-col items-center justify-center cursor-pointer border border-dashed border-foreground/10 m-3 rounded-xl transition-all duration-200 select-none",
+                    isDragging ? "bg-foreground/5 border-foreground/30" : "hover:bg-foreground/[0.02]"
+                  )}
+                >
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                  <div className="w-10 h-10 rounded-full border border-foreground/10 flex items-center justify-center mb-4 bg-foreground/5">
+                    <Plus className="w-5 h-5 text-foreground/60" />
+                  </div>
+                  <span className="text-sm font-medium mb-1">Upload an image</span>
+                  <span className="text-[11px] text-foreground/40">
+                    PNG or JPG. The exported image will be a PNG.
+                  </span>
+                </motion.label>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* RIGHT: Sidebar Controls */}
+          <div className="space-y-5 flex flex-col h-full justify-between py-1">
+            <div className="space-y-5">
+              {/* Format Selection Control */}
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-foreground/80">Format</span>
+                <div className="grid grid-cols-2 gap-1 p-0.5 rounded-lg bg-foreground/5 border border-foreground/5">
+                  <button
+                    type="button"
+                    disabled={!media}
+                    onClick={() => update({ format: "original" })}
+                    className={cn(
+                      "py-1 text-[11px] font-semibold rounded-md transition-all select-none cursor-pointer",
+                      config.format === "original"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-foreground/50 hover:text-foreground/80 disabled:opacity-40 disabled:cursor-not-allowed"
+                    )}
+                  >
+                    Original
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!media}
+                    onClick={() => update({ format: "vertical" })}
+                    className={cn(
+                      "py-1 text-[11px] font-semibold rounded-md transition-all select-none cursor-pointer",
+                      config.format === "vertical"
+                        ? "bg-background text-foreground shadow-sm"
+                        : "text-foreground/50 hover:text-foreground/80 disabled:opacity-40 disabled:cursor-not-allowed"
+                    )}
+                  >
+                    Vertical (9:16)
+                  </button>
+                </div>
+              </div>
+
+              {/* Logo Size Control */}
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-foreground/80">Logo size</span>
+                <Slider
+                  min={5}
+                  max={40}
+                  step={1}
+                  value={[config.logoSize]}
+                  disabled={!media}
+                  onValueChange={([val]) => update({ logoSize: val })}
+                  className={cn("w-full transition-opacity", !media && "opacity-40")}
+                />
+              </div>
+
+              {/* Vertical Position Control */}
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-foreground/80">Vertical position</span>
+                <Slider
+                  min={10}
+                  max={90}
+                  step={1}
+                  value={[config.verticalPosition]}
+                  disabled={!media}
+                  onValueChange={([val]) => update({ verticalPosition: val })}
+                  className={cn("w-full transition-opacity", !media && "opacity-40")}
+                />
+              </div>
+
+              {/* Photo Zoom Control */}
+              <div className="space-y-2">
+                <span className="text-xs font-semibold text-foreground/80">Photo zoom</span>
+                <Slider
+                  min={100}
+                  max={300}
+                  step={1}
+                  value={[config.zoom || 100]}
+                  disabled={!media}
+                  onValueChange={([val]) => update({ zoom: val })}
+                  className={cn("w-full transition-opacity", !media && "opacity-40")}
+                />
+              </div>
+
+              {/* Action Buttons Row */}
+              <div className="grid grid-cols-2 gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={triggerDownload}
+                  disabled={!media || exportStatus === "exporting"}
+                  className={cn(
+                    "h-10 rounded-full text-xs font-semibold transition-all duration-200 select-none border border-transparent",
+                    media
+                      ? "bg-foreground text-background hover:opacity-90 active:scale-95 cursor-pointer"
+                      : "bg-foreground text-background cursor-not-allowed opacity-75"
+                  )}
+                >
+                  {exportStatus === "exporting" ? "Exporting…" : "Download"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    clearMedia();
+                    reset();
+                  }}
+                  disabled={!media}
+                  className={cn(
+                    "h-10 rounded-full text-xs font-semibold transition-all duration-200 select-none border border-transparent",
+                    media
+                      ? "bg-foreground/10 hover:bg-foreground/15 text-foreground active:scale-95 cursor-pointer"
+                      : "bg-foreground/10 text-foreground cursor-not-allowed opacity-75"
+                  )}
+                >
+                  Restart
+                </button>
+              </div>
+            </div>
+
+            {/* Inspired by attribution */}
+            <div className="text-center text-[10px] text-foreground/35 pt-12">
+              Inspired by{" "}
+              <a
+                href="https://jessyin.world"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline hover:text-foreground/50 transition-colors"
+              >
+                jessyin.world
+              </a>
+            </div>
+          </div>
         </div>
       </main>
     </div>
