@@ -136,6 +136,27 @@ export function exportCanvasToPng(
 }
 
 /**
+ * Saves a blob using the native share sheet when available (iOS "Save to Photos",
+ * Android share targets), otherwise falls back to a file download.
+ * Returns false only when the user cancels the share sheet.
+ */
+export async function saveBlob(blob: Blob, filename: string): Promise<boolean> {
+  const file = new File([blob], filename, { type: blob.type });
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file] });
+      return true;
+    } catch (err) {
+      // User dismissed the sheet → don't fall back to a download.
+      if (err instanceof Error && err.name === "AbortError") return false;
+      // Any other share failure → fall through to download.
+    }
+  }
+  downloadBlob(blob, filename);
+  return true;
+}
+
+/**
  * Triggers a browser download for a given Blob.
  */
 export function downloadBlob(blob: Blob, filename: string): void {

@@ -6,7 +6,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { exportCanvasToPng, downloadBlob } from "@/lib/branding/engine";
+import { exportCanvasToPng, saveBlob } from "@/lib/branding/engine";
 
 type ExportStatus = "idle" | "exporting" | "done" | "error";
 
@@ -21,9 +21,13 @@ export function useExport() {
       setError(null);
       try {
         const blob = await exportCanvasToPng(canvas, 0.95);
-        downloadBlob(blob, filename);
-        setStatus("done");
-        setTimeout(() => setStatus("idle"), 2000);
+        const completed = await saveBlob(blob, filename);
+        if (completed) {
+          setStatus("done");
+          setTimeout(() => setStatus("idle"), 2000);
+        } else {
+          setStatus("idle");
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Export failed");
         setStatus("error");
