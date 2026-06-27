@@ -62,6 +62,21 @@ export default function CodexPage() {
     if (file) loadFile(file);
   };
 
+  const handleCustomLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      update({ customLogoUrl: url });
+    }
+  };
+
+  const handleResetCustomLogo = () => {
+    if (config.customLogoUrl) {
+      URL.revokeObjectURL(config.customLogoUrl);
+    }
+    update({ customLogoUrl: undefined });
+  };
+
   const triggerDownload = () => {
     if (!media) return;
     exportPng(canvasRef.current?.canvas ?? null, "mbs-branded.png");
@@ -226,8 +241,74 @@ export default function CodexPage() {
                 </div>
               </div>
 
+              {/* Custom Branding Control */}
+              <div className="space-y-3 pt-1 border-t border-foreground/5">
+                <div className="text-[11px] font-semibold text-foreground/80 tracking-wide uppercase">Custom Watermark</div>
+                
+                {/* Brand Name Input */}
+                <div className="space-y-1.5">
+                  <div className="flex justify-between items-center text-[10px] text-foreground/50">
+                    <span>Brand name</span>
+                    <span>{config.customBrandName?.length || 0}/25</span>
+                  </div>
+                  <input
+                    type="text"
+                    disabled={!media}
+                    placeholder="MyBestSim"
+                    maxLength={25}
+                    value={config.customBrandName || ""}
+                    onChange={(e) => update({ customBrandName: e.target.value })}
+                    className="w-full px-3 py-1.5 text-xs rounded-md bg-foreground/5 border border-foreground/5 focus:outline-none focus:border-foreground/20 text-foreground transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  />
+                </div>
+
+                {/* Brand Logo Upload */}
+                <div className="space-y-1.5">
+                  <span className="text-[10px] text-foreground/50 block">Brand logo</span>
+                  {config.customLogoUrl ? (
+                    <div className="flex items-center justify-between gap-3 p-1.5 rounded-md bg-foreground/5 border border-foreground/5">
+                      <div className="flex items-center gap-2">
+                        {/* Preview thumbnail */}
+                        <img
+                          src={config.customLogoUrl}
+                          alt="Custom logo"
+                          className="w-6 h-6 object-contain rounded bg-foreground/5 p-0.5"
+                        />
+                        <span className="text-[10px] text-foreground/60 truncate max-w-[120px]">
+                          Custom Logo
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleResetCustomLogo}
+                        className="text-[10px] font-semibold text-foreground/50 hover:text-foreground transition-colors cursor-pointer px-1.5 py-0.5 rounded hover:bg-foreground/5"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                  ) : (
+                    <label
+                      className={cn(
+                        "flex items-center justify-center gap-2 py-1.5 px-3 border border-dashed border-foreground/15 rounded-md hover:bg-foreground/[0.02] transition-colors cursor-pointer select-none text-[11px] font-medium text-foreground/70",
+                        !media && "opacity-40 cursor-not-allowed pointer-events-none"
+                      )}
+                    >
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        disabled={!media}
+                        onChange={handleCustomLogoChange}
+                      />
+                      <Plus className="w-3.5 h-3.5" />
+                      Upload Logo
+                    </label>
+                  )}
+                </div>
+              </div>
+
               {/* Logo Size Control */}
-              <div className="space-y-2">
+              <div className="space-y-2 pt-1 border-t border-foreground/5">
                 <span className="text-xs font-semibold text-foreground/80">Logo size</span>
                 <Slider
                   min={5}
@@ -286,6 +367,7 @@ export default function CodexPage() {
                 <button
                   type="button"
                   onClick={() => {
+                    handleResetCustomLogo();
                     clearMedia();
                     reset();
                   }}

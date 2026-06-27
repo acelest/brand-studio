@@ -12,6 +12,8 @@ const DEFAULTS: OverlayConfig = {
   verticalPosition: 50,
   zoom: 100,
   format: "original",
+  customLogoUrl: undefined,
+  customBrandName: "",
 };
 
 export function useOverlay() {

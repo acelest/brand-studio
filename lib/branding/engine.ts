@@ -67,7 +67,7 @@ export async function drawOverlay(
   // 3. Load logo image
   let logoImg: HTMLImageElement | null = null;
   try {
-    logoImg = await loadLogoImage(brandKit.logoUrl);
+    logoImg = await loadLogoImage(config.customLogoUrl || brandKit.logoUrl);
   } catch (err) {
     console.error("Failed to load logo", err);
   }
@@ -112,7 +112,7 @@ export async function drawOverlay(
   ctx.shadowOffsetX = 0;
   ctx.shadowOffsetY = textHeight * 0.05;
 
-  ctx.fillText("MyBestSim", textX, textY);
+  ctx.fillText((config.customBrandName || brandKit.displayName || "MyBestSim").slice(0, 25), textX, textY);
   ctx.restore();
 }
 

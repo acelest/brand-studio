@@ -8,6 +8,8 @@ export interface OverlayConfig {
   verticalPosition: number; // Slider value: 10 – 90 (percent of image height)
   zoom: number;           // Slider value: 100 – 300 (percent zoom)
   format: "original" | "vertical"; // Format aspect ratio selection
+  customLogoUrl?: string; // Optional custom uploaded logo URL
+  customBrandName?: string; // Optional custom brand name text
 }
 
 export interface MediaFile {
