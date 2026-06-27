@@ -1,0 +1,39 @@
+{
+  "id": "mybestsim",
+  "displayName": "MyBestSim",
+  "language": "fr",
+  "niche": "travel-esim",
+  "logoUrl": "/brands/mybestsim/logo-billboard.png",
+  "logoWhiteUrl": "/brands/mybestsim/logo-billboard.png",
+  "colors": {
+    "primary": "#0ea5e9",
+    "secondary": "#1E3A8A",
+    "cta": "#EF4444",
+    "background": "#f8fbff",
+    "heading": "#0f172a",
+    "text": "#475569",
+    "caption": "#FFD54A",
+    "captionOutline": "#000000"
+  },
+  "safeMargins": {
+    "top": 32,
+    "bottom": 32,
+    "left": 32,
+    "right": 32
+  },
+  "defaultOverlay": {
+    "logoScale": 0.18,
+    "logoOpacity": 1.0,
+    "logoPosition": "top-left",
+    "textOpacity": 1.0,
+    "textScale": 0.06,
+    "companyName": "MyBestSim",
+    "showCompanyName": true,
+    "safeMargins": {
+      "top": 32,
+      "bottom": 32,
+      "left": 32,
+      "right": 32
+    }
+  }
+}
