@@ -27,10 +27,12 @@ export const metadata: Metadata = {
     description: "Upload an image and instantly apply a professional brand identity.",
     images: [
       {
-        url: "/mbs-branded.png",
+        url: "/mbs-og.jpg",
+        secureUrl: "/mbs-og.jpg",
         width: 1200,
-        height: 630,
-        alt: "Brand Studio Preview",
+        height: 1199,
+        type: "image/jpeg",
+        alt: "Brand Studio - MyBestSim",
       },
     ],
     type: "website",
@@ -39,7 +41,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Brand Studio - MyBestSim",
     description: "Upload an image and instantly apply a professional brand identity.",
-    images: ["/mbs-branded.png"],
+    images: ["/mbs-og.jpg"],
   },
 };
 
