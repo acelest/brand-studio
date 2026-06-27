@@ -143,6 +143,10 @@ export function downloadBlob(blob: Blob, filename: string): void {
   const a = document.createElement("a");
   a.href = url;
   a.download = filename;
+  a.rel = "noopener";
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  // Defer revoke: revoking synchronously cancels the download on mobile browsers.
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
 }
