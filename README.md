@@ -1,6 +1,8 @@
 # Brand Studio
 
 > Upload an image or video. Apply a professional brand identity in seconds. Export PNG or MP4.
+>
+> Inspired by the awesome [codex-billboard](https://codex-billboard.vercel.app/) project created by [Jess Yin (@jessyin)](https://github.com/jessyin).
 
 Brand Studio is a standalone Next.js 16 web application — part of the Content Platform ecosystem, independent from the Content Factory CLI engine.
 
